@@ -11,7 +11,9 @@ const (
 	DataTypeBoolean DataType = "boolean"
 	DataTypeArray   DataType = "array"
 	DataTypeObject  DataType = "object"
+
 	DataTypeUnknown DataType = "unknown"
+	DataTypePointer DataType = "pointer"
 )
 
 func GetDataTypeMapper(dataType reflect.Kind) DataType {
@@ -24,7 +26,7 @@ func GetDataTypeMapper(dataType reflect.Kind) DataType {
 		return DataTypeNumber
 	case reflect.Array, reflect.Slice:
 		return DataTypeArray
-	case reflect.Map, reflect.Pointer, reflect.Struct, reflect.Interface:
+	case reflect.Map, reflect.Struct, reflect.Interface, reflect.Pointer:
 		return DataTypeObject
 	}
 
