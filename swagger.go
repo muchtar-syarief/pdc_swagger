@@ -1,23 +1,23 @@
 package pdc_swagger
 
 type PdcSwagger struct {
-	OpenApi string            `yaml:"openapi" json:"openapi"`
-	Info    *PdcSwaggerInfo   `yaml:"info" json:"info"`
-	Servers PdcSwaggerServers `yaml:"servers" json:"servers"`
-	// Paths
+	OpenApi string                     `yaml:"openapi" json:"openapi"`
+	Info    *Info                      `yaml:"info" json:"info"`
+	Servers []*ServerObject            `yaml:"servers,omitempty" json:"servers,omitempty"`
+	Paths   map[string]*PathItemObject `yaml:"paths" json:"paths"`
 }
 
 func NewPdcSwagger(title, description, version string) *PdcSwagger {
-	info := NewPdcSwaggerInfo(title, description, version)
+	info := NewInfo(title, description, version)
 
 	return &PdcSwagger{
 		OpenApi: "3.0.0",
 		Info:    info,
-		Servers: PdcSwaggerServers{},
+		Servers: []*ServerObject{},
 	}
 }
 
-func (s *PdcSwagger) AddServer(server *PdcSwaggerServer) *PdcSwagger {
+func (s *PdcSwagger) AddServer(server *ServerObject) *PdcSwagger {
 	s.Servers = append(s.Servers, server)
 
 	return s

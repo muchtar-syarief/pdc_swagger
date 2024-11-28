@@ -18,7 +18,7 @@ var LicenceApache = &License{
 	Url:        "https://www.apache.org/licenses/LICENSE-2.0.html",
 }
 
-type PdcSwaggerInfo struct {
+type Info struct {
 	Title          string   `yaml:"title" json:"title"`
 	Summary        string   `yaml:"summary" json:"summary"`
 	Description    string   `yaml:"description" json:"description"`
@@ -28,34 +28,34 @@ type PdcSwaggerInfo struct {
 	Version        string   `yaml:"version" json:"version"`
 }
 
-func NewPdcSwaggerInfo(
+func NewInfo(
 	title,
 	description,
 	version string,
-) *PdcSwaggerInfo {
-	return &PdcSwaggerInfo{
+) *Info {
+	return &Info{
 		Title:       title,
 		Description: description,
 		Version:     version,
 	}
 }
 
-func (i *PdcSwaggerInfo) SetSummary(summary string) *PdcSwaggerInfo {
+func (i *Info) SetSummary(summary string) *Info {
 	i.Summary = summary
 	return i
 }
 
-func (i *PdcSwaggerInfo) SetTermOfService(termOfService string) *PdcSwaggerInfo {
+func (i *Info) SetTermOfService(termOfService string) *Info {
 	i.TermsOfService = termOfService
 	return i
 }
 
-func (i *PdcSwaggerInfo) SetLicence(license *License) *PdcSwaggerInfo {
+func (i *Info) SetLicence(license *License) *Info {
 	i.License = license
 	return i
 }
 
-func (i *PdcSwaggerInfo) SetContact(name, url, email string) *PdcSwaggerInfo {
+func (i *Info) SetContact(name, url, email string) *Info {
 	i.Contact = &Contact{
 		Name:  name,
 		Url:   url,

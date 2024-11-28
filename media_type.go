@@ -7,8 +7,6 @@ const (
 	MediaTypeTextPlain MediaType = "text/plain; charset=utf-8"
 )
 
-type MediaTypeContent struct {
+type MediaTypeObject struct {
 	Schema *Schema `yaml:"schema" json:"schema"`
 }
-
-type MediaTypeObject map[MediaType]*MediaTypeContent

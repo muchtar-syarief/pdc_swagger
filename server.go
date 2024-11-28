@@ -6,24 +6,22 @@ type ServerVariable struct {
 	Description string   `yaml:"description" json:"description"`
 }
 
-type ServerVariables map[string]*ServerVariable
-
-type PdcSwaggerServer struct {
-	Url         string          `yaml:"url" json:"url"`
-	Description string          `yaml:"description" json:"description"`
-	Variables   ServerVariables `yaml:"variables,omitempty" json:"variables,omitempty"`
+type ServerObject struct {
+	Url         string                     `yaml:"url" json:"url"`
+	Description string                     `yaml:"description" json:"description"`
+	Variables   map[string]*ServerVariable `yaml:"variables,omitempty" json:"variables,omitempty"`
 }
 
-func NewServer(url, desc string) *PdcSwaggerServer {
-	return &PdcSwaggerServer{
+func NewServer(url, desc string) *ServerObject {
+	return &ServerObject{
 		Url:         url,
 		Description: desc,
 	}
 }
 
-func (s *PdcSwaggerServer) SetVariables(name, desc, data string, enums []string) *PdcSwaggerServer {
+func (s *ServerObject) SetVariables(name, desc, data string, enums []string) *ServerObject {
 	if s.Variables == nil {
-		s.Variables = ServerVariables{}
+		s.Variables = map[string]*ServerVariable{}
 	}
 
 	variable := ServerVariable{
@@ -35,5 +33,3 @@ func (s *PdcSwaggerServer) SetVariables(name, desc, data string, enums []string)
 	s.Variables[name] = &variable
 	return s
 }
-
-type PdcSwaggerServers []*PdcSwaggerServer

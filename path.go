@@ -1,53 +1,66 @@
 package pdc_swagger
 
-type ItemResponse struct {
-	Description string          `yaml:"description" json:"description"`
-	Content     MediaTypeObject `yaml:"content" json:"content"`
+type ResponseObject struct {
+	Description string                         `yaml:"description" json:"description"`
+	Headers     map[string]interface{}         `yaml:"headers,omitempty" json:"headers,omitempty"`
+	Content     map[MediaType]*MediaTypeObject `yaml:"content,omitempty" json:"content,omitempty"`
+	Links       map[string]interface{}         `yaml:"links,omitempty" json:"links,omitempty"`
 }
 
-type HTTPStatusCode int
-type PathItemResponses map[HTTPStatusCode]interface{}
-
-type PathItemParameter struct {
-	Name        string `yaml:"name" json:"name"`
-	In          string `yaml:"in" json:"in"`
-	Description string `yaml:"description" json:"description"`
-	Required    bool   `yaml:"required" json:"required"`
-	// Schema      interface{} `yaml:"schema" json:"schema"`
+type RequestBodyObject struct {
+	Description string                         `yaml:"description" json:"description"`
+	Required    bool                           `yaml:"required" json:"required"`
+	Content     map[MediaType]*MediaTypeObject `yaml:"content,omitempty" json:"content,omitempty"`
 }
 
-// type PathItemRequestBody struct {
-// 	Content map[string]
-// }
-
-type PdcSwaggerPathItem struct {
-	Summary     string               `yaml:"summary" json:"summary"`
-	Description string               `yaml:"description" json:"description"`
-	Parameters  []*PathItemParameter `yaml:"parameters,omitempty" json:"parameters,omitempty"`
-	// EequestBody *PathItemRequestBody  `yaml:"requestBody,omitempty" json:"requestBody,omitempty"`
-	Responses PathItemResponses `yaml:"responses" json:"responses"`
+type ParameterObject struct {
+	Name        string  `yaml:"name" json:"name"`
+	In          string  `yaml:"in" json:"in"`
+	Description string  `yaml:"description" json:"description"`
+	Required    bool    `yaml:"required" json:"required"`
+	Deprecated  bool    `yaml:"deprecated" json:"deprecated"`
+	Schema      *Schema `yaml:"schema,omitempty" json:"schema,omitempty"`
 }
 
-type HTTPMethod string
-type PdcSwaggerPathData map[HTTPMethod]*PdcSwaggerPathItem
+type HTTPStatusCode string
 
-func NewPathData() PdcSwaggerPathData {
-	return PdcSwaggerPathData{}
+type OperationObject struct {
+	Tags        []string                           `yaml:"tags" json:"tags"`
+	Summary     string                             `yaml:"summary" json:"summary"`
+	Description string                             `yaml:"description" json:"description"`
+	OperationId string                             `yaml:"operationId" json:"operationId"`
+	Parameters  []*ParameterObject                 `yaml:"parameters" json:"parameters"`
+	RequestBody *RequestBodyObject                 `yaml:"requestBody,omitempty" json:"requestBody,omitempty"`
+	Responses   map[HTTPStatusCode]*ResponseObject `yaml:"responses,omitempty" json:"responses,omitempty"`
+	Callbacks   interface{}                        `yaml:"callbacks,omitempty" json:"callbacks,omitempty"`
+	Deprecated  bool                               `yaml:"deprecated" json:"deprecated"`
+	Security    interface{}                        `yaml:"security,omitempty" json:"security,omitempty"`
+	Servers     []*ServerObject                    `yaml:"servers,omitempty" json:"servers,omitempty"`
 }
 
-func (p PdcSwaggerPathData) AddPathData(method HTTPMethod, pathData *PdcSwaggerPathItem) PdcSwaggerPathData {
-	p[method] = pathData
-	return p
+type PathItemObject struct {
+	Summary     string             `yaml:"summary" json:"summary"`
+	Description string             `yaml:"description" json:"description"`
+	Get         *OperationObject   `yaml:"get,omitempty" json:"get,omitempty"`
+	Put         *OperationObject   `yaml:"put,omitempty" json:"put,omitempty"`
+	Post        *OperationObject   `yaml:"post,omitempty" json:"post,omitempty"`
+	Delete      *OperationObject   `yaml:"delete,omitempty" json:"delete,omitempty"`
+	Options     *OperationObject   `yaml:"options,omitempty" json:"options,omitempty"`
+	Head        *OperationObject   `yaml:"head,omitempty" json:"head,omitempty"`
+	Patch       *OperationObject   `yaml:"patch,omitempty" json:"patch,omitempty"`
+	Trace       *OperationObject   `yaml:"trace,omitempty" json:"trace,omitempty"`
+	Servers     []*ServerObject    `yaml:"servers,omitempty" json:"servers,omitempty"`
+	Parameters  []*ParameterObject `yaml:"parameters,omitempty" json:"parameters,omitempty"`
 }
 
 type Router string
-type PdcSwaggerPath map[Router]PdcSwaggerPathData
+type PdcSwaggerPath map[Router]*PathItemObject
 
 func NewPath() PdcSwaggerPath {
 	return PdcSwaggerPath{}
 }
 
-func (p PdcSwaggerPath) AddRouter(route Router, pathData PdcSwaggerPathData) PdcSwaggerPath {
+func (p PdcSwaggerPath) AddRouter(route Router, pathData *PathItemObject) PdcSwaggerPath {
 	p[route] = pathData
 	return p
 }
