@@ -1,46 +1,12 @@
 package pdc_swagger
 
-type ResponseObject struct {
-	Description string                         `yaml:"description" json:"description"`
-	Headers     map[string]interface{}         `yaml:"headers,omitempty" json:"headers,omitempty"`
-	Content     map[MediaType]*MediaTypeObject `yaml:"content,omitempty" json:"content,omitempty"`
-	Links       map[string]interface{}         `yaml:"links,omitempty" json:"links,omitempty"`
-}
-
-type RequestBodyObject struct {
-	Description string                         `yaml:"description" json:"description"`
-	Required    bool                           `yaml:"required" json:"required"`
-	Content     map[MediaType]*MediaTypeObject `yaml:"content,omitempty" json:"content,omitempty"`
-}
-
-type ParameterObject struct {
-	Name        string  `yaml:"name" json:"name"`
-	In          string  `yaml:"in" json:"in"`
-	Description string  `yaml:"description" json:"description"`
-	Required    bool    `yaml:"required" json:"required"`
-	Deprecated  bool    `yaml:"deprecated" json:"deprecated"`
-	Schema      *Schema `yaml:"schema,omitempty" json:"schema,omitempty"`
-}
+import "net/http"
 
 type HTTPStatusCode string
 
-type OperationObject struct {
-	Tags        []string                           `yaml:"tags" json:"tags"`
-	Summary     string                             `yaml:"summary" json:"summary"`
-	Description string                             `yaml:"description" json:"description"`
-	OperationId string                             `yaml:"operationId" json:"operationId"`
-	Parameters  []*ParameterObject                 `yaml:"parameters" json:"parameters"`
-	RequestBody *RequestBodyObject                 `yaml:"requestBody,omitempty" json:"requestBody,omitempty"`
-	Responses   map[HTTPStatusCode]*ResponseObject `yaml:"responses,omitempty" json:"responses,omitempty"`
-	Callbacks   interface{}                        `yaml:"callbacks,omitempty" json:"callbacks,omitempty"`
-	Deprecated  bool                               `yaml:"deprecated" json:"deprecated"`
-	Security    interface{}                        `yaml:"security,omitempty" json:"security,omitempty"`
-	Servers     []*ServerObject                    `yaml:"servers,omitempty" json:"servers,omitempty"`
-}
-
 type PathItemObject struct {
-	Summary     string             `yaml:"summary" json:"summary"`
-	Description string             `yaml:"description" json:"description"`
+	Summary     string             `yaml:"summary,omitempty" json:"summary,omitempty"`
+	Description string             `yaml:"description,omitempty" json:"description,omitempty"`
 	Get         *OperationObject   `yaml:"get,omitempty" json:"get,omitempty"`
 	Put         *OperationObject   `yaml:"put,omitempty" json:"put,omitempty"`
 	Post        *OperationObject   `yaml:"post,omitempty" json:"post,omitempty"`
@@ -53,14 +19,35 @@ type PathItemObject struct {
 	Parameters  []*ParameterObject `yaml:"parameters,omitempty" json:"parameters,omitempty"`
 }
 
-type Router string
-type PdcSwaggerPath map[Router]*PathItemObject
-
-func NewPath() PdcSwaggerPath {
-	return PdcSwaggerPath{}
+func NewPathItemObject(summary, desc string) *PathItemObject {
+	return &PathItemObject{
+		Summary:     summary,
+		Description: desc,
+	}
 }
 
-func (p PdcSwaggerPath) AddRouter(route Router, pathData *PathItemObject) PdcSwaggerPath {
-	p[route] = pathData
-	return p
+func (i *PathItemObject) SetOperationObject(method string, operation *OperationObject) *PathItemObject {
+	switch method {
+	case http.MethodGet:
+		i.Get = operation
+	case http.MethodPost:
+		i.Post = operation
+	case http.MethodPut:
+		i.Put = operation
+	case http.MethodDelete:
+		i.Put = operation
+	}
+
+	return i
+}
+
+func (i *PathItemObject) SetParameters(data interface{}) *PathItemObject {
+	if i.Parameters == nil {
+		i.Parameters = []*ParameterObject{}
+	}
+
+	parameters := NewListParametersObject(data)
+	i.Parameters = append(i.Parameters, parameters...)
+
+	return i
 }

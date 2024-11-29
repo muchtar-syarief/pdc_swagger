@@ -20,9 +20,9 @@ var LicenceApache = &License{
 
 type Info struct {
 	Title          string   `yaml:"title" json:"title"`
-	Summary        string   `yaml:"summary" json:"summary"`
-	Description    string   `yaml:"description" json:"description"`
-	TermsOfService string   `yaml:"termsOfService" json:"termsOfService"`
+	Summary        string   `yaml:"summary,omitempty" json:"summary,omitempty"`
+	Description    string   `yaml:"description,omitempty" json:"description,omitempty"`
+	TermsOfService string   `yaml:"termsOfService,omitempty" json:"termsOfService,omitempty"`
 	Contact        *Contact `yaml:"contact,omitempty" json:"contact,omitempty"`
 	License        *License `yaml:"license,omitempty" json:"license,omitempty"`
 	Version        string   `yaml:"version" json:"version"`

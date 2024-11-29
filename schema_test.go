@@ -23,10 +23,10 @@ type User struct {
 }
 
 func TestBuildSchema(t *testing.T) {
+
 	t.Run("test not pointer", func(t *testing.T) {
 		apiError := ApiError{}
-		result, err := pdc_swagger.NewSchema(apiError)
-		assert.Nil(t, err)
+		result := pdc_swagger.NewSchema(apiError)
 		assert.NotEmpty(t, result)
 
 		// raw, err := json.MarshalIndent(result, "", "	")
@@ -36,8 +36,7 @@ func TestBuildSchema(t *testing.T) {
 
 	t.Run("test not pointer with pointer", func(t *testing.T) {
 		apiError := &ApiError{}
-		result, err := pdc_swagger.NewSchema(apiError)
-		assert.Nil(t, err)
+		result := pdc_swagger.NewSchema(apiError)
 		assert.NotEmpty(t, result)
 
 		// raw, err := json.MarshalIndent(result, "", "	")
@@ -47,8 +46,7 @@ func TestBuildSchema(t *testing.T) {
 
 	t.Run("test embed struct and generic", func(t *testing.T) {
 		response := &ApiResponse[map[string]string]{}
-		result, err := pdc_swagger.NewSchema(response)
-		assert.Nil(t, err)
+		result := pdc_swagger.NewSchema(response)
 		assert.NotEmpty(t, result)
 
 		// raw, err := json.MarshalIndent(result, "", "	")
@@ -58,8 +56,7 @@ func TestBuildSchema(t *testing.T) {
 
 	t.Run("test fmt tag", func(t *testing.T) {
 		usr := &User{}
-		result, err := pdc_swagger.NewSchema(usr)
-		assert.Nil(t, err)
+		result := pdc_swagger.NewSchema(usr)
 		assert.NotEmpty(t, result)
 
 		// raw, err := json.MarshalIndent(result, "", "	")

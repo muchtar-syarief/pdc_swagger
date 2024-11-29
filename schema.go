@@ -1,7 +1,6 @@
 package pdc_swagger
 
 import (
-	"errors"
 	"reflect"
 	"time"
 )
@@ -14,8 +13,7 @@ type Schema struct {
 	AdditionalProperties *Schema            `yaml:"additionalProperties,omitempty" json:"additionalProperties,omitempty"`
 }
 
-func NewSchema(data interface{}) (*Schema, error) {
-	var err error
+func NewSchema(data interface{}) *Schema {
 	schema := &Schema{}
 
 	dataType := reflect.TypeOf(data)
@@ -35,7 +33,7 @@ func NewSchema(data interface{}) (*Schema, error) {
 				Type: DataTypeString,
 			}
 
-			return schema, err
+			return schema
 		}
 
 		for i := 0; i < dataType.NumField(); i++ {
@@ -45,10 +43,7 @@ func NewSchema(data interface{}) (*Schema, error) {
 
 			switch field.Type.Kind() {
 			case reflect.Pointer:
-				schemaProperties, err := NewSchema(dataModel)
-				if err != nil {
-					return schema, err
-				}
+				schemaProperties := NewSchema(dataModel)
 				schema.Properties = schemaProperties.Properties
 
 			default:
@@ -57,17 +52,13 @@ func NewSchema(data interface{}) (*Schema, error) {
 					nameField = field.Name
 				}
 
-				schemaProperties, err := NewSchema(dataModel)
-				if err != nil {
-					return schema, err
-				}
+				schemaProperties := NewSchema(dataModel)
 				schema.Properties[nameField] = schemaProperties
 
 				formatField := field.Tag.Get("fmt")
 				if formatField != "" {
 					schema.Properties[nameField].Format = formatField
 				}
-
 			}
 		}
 
@@ -75,27 +66,20 @@ func NewSchema(data interface{}) (*Schema, error) {
 		valueType := reflect.TypeOf(data).Elem()
 
 		dataModel := reflect.Zero(valueType).Interface()
-		additionalProperties, err := NewSchema(dataModel)
-		if err != nil {
-			return schema, err
-		}
 
+		additionalProperties := NewSchema(dataModel)
 		schema.AdditionalProperties = additionalProperties
 
 	case reflect.Pointer:
 		dataModel := reflect.Zero(dataType.Elem()).Interface()
-		result, err := NewSchema(dataModel)
-		if err != nil {
-			return schema, err
-		}
+		result := NewSchema(dataModel)
 
 		schema = result
-		return schema, err
+		return schema
 
 	case reflect.Invalid:
-		err := errors.New("error unknown data type")
-		return schema, err
+		return schema
 	}
 
-	return schema, err
+	return schema
 }

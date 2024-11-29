@@ -16,11 +16,7 @@ func NewComponent() *PdcSwaggerComponent {
 }
 
 func (c *PdcSwaggerComponent) AddComponent(name string, data interface{}) *PdcSwaggerComponent {
-	schema, err := NewSchema(data)
-	if err != nil {
-		return c
-	}
-
+	schema := NewSchema(data)
 	c.Components.Schemas[name] = schema
 
 	return c
