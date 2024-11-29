@@ -5,7 +5,7 @@ import (
 	"text/template"
 )
 
-var ViewTemplate = `<!DOCTYPE html>
+var SwaggerViewTemplate = `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -34,7 +34,7 @@ func GetSwaggerViewTemplate(config *ViewTemplateConfig) (string, error) {
 	var out bytes.Buffer
 
 	viewTemplate := template.New("open_api_template")
-	viewTemplate.Parse(ViewTemplate)
+	viewTemplate.Parse(SwaggerViewTemplate)
 
 	err := viewTemplate.Execute(&out, config)
 	return out.String(), err

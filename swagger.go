@@ -57,40 +57,44 @@ func (s *PdcSwagger) RegisterDataDocumentation(url string, handler func(method, 
 	return s
 }
 
-func (s *PdcSwagger) RegisterSwaggerDocumentation(url string, handler func(method, path, responseTemplate string)) *PdcSwagger {
-	if url == "" {
-		url = "/doc_data"
+func (s *PdcSwagger) RegisterSwaggerDocumentation(urlData, urlDoc string, handler func(method, path string, responseTemplate func() (string, error))) *PdcSwagger {
+	if urlData == "" {
+		urlData = "/doc_data"
 	}
 
-	template, err := view.GetSwaggerViewTemplate(&view.ViewTemplateConfig{
-		Title: s.Info.Title,
-		Url:   url,
-	})
-	if err != nil {
-		handler(http.MethodGet, "/docs", "error register swagger documentation")
-		return s
+	if urlDoc == "" {
+		urlDoc = "/docs"
 	}
 
-	handler(http.MethodGet, "/docs", template)
+	getTemplate := func() (string, error) {
+		return view.GetSwaggerViewTemplate(&view.ViewTemplateConfig{
+			Title: s.Info.Title,
+			Url:   urlData,
+		})
+	}
+
+	handler(http.MethodGet, urlDoc, getTemplate)
 
 	return s
 }
 
-func (s *PdcSwagger) RegisterRedocDocumentation(url string, handler func(method, path, responseTemplate string)) *PdcSwagger {
-	if url == "" {
-		url = "/doc_data"
+func (s *PdcSwagger) RegisterRedocDocumentation(urlData, urlDoc string, handler func(method, path string, responseTemplate func() (string, error))) *PdcSwagger {
+	if urlData == "" {
+		urlData = "/doc_data"
 	}
 
-	template, err := view.GetSwaggerViewTemplate(&view.ViewTemplateConfig{
-		Title: s.Info.Title,
-		Url:   url,
-	})
-	if err != nil {
-		handler(http.MethodGet, "/docs", "error register redoc documentation")
-		return s
+	if urlDoc == "" {
+		urlDoc = "/redoc"
 	}
 
-	handler(http.MethodGet, "/redoc", template)
+	getTemplate := func() (string, error) {
+		return view.GetSwaggerViewTemplate(&view.ViewTemplateConfig{
+			Title: s.Info.Title,
+			Url:   urlData,
+		})
+	}
+
+	handler(http.MethodGet, urlDoc, getTemplate)
 
 	return s
 }
