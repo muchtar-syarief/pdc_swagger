@@ -39,7 +39,7 @@ func (i *PathItemObject) SetOperationObject(method string, operation *OperationO
 	case http.MethodPut:
 		i.Put = operation
 	case http.MethodDelete:
-		i.Put = operation
+		i.Delete = operation
 	}
 
 	return i
