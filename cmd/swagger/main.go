@@ -1,10 +1,81 @@
 package main
 
-// func CreateGinApi() {
-// 	r := gin.Defa
-// }
+import (
+	"net/http"
 
-// func main() {
-// 	swagger := pdc_swagger.NewPdcSwagger("Test Api", "Test create api documentation", "1.0.0")
+	"github.com/gin-gonic/gin"
+	"github.com/muchtar-syarief/pdc_swagger"
+	"github.com/muchtar-syarief/pdc_swagger/doc_api"
+)
 
-// }
+type IntEnum int
+type UintEnum uint
+
+type PayloadDataDD struct {
+	Name string `json:"name" binding:"required,gte=6,lte=32"`
+}
+
+type MarkupValue float64
+
+type ResponseData struct {
+	Data  string      `json:"data"`
+	Page  IntEnum     `json:"page"`
+	Page2 UintEnum    `json:"page2"`
+	Val   MarkupValue `json:"val"`
+}
+
+func main() {
+
+	doc := pdc_swagger.NewPdcOpenApi("Test Documentation API", "Description test documentation api", "1.0.0")
+
+	r := gin.Default()
+	sdk := doc_api.NewApiSdk(r).
+		UseDocumentation(doc).
+		UseRedocDocumentation("/data_doc", "/redoc")
+
+	sdk.Register(&doc_api.ApiData{
+		Payload:      PayloadDataDD{},
+		Method:       http.MethodPost,
+		RelativePath: "/users",
+		Tags:         []string{"Users"},
+	}, func(ctx *gin.Context) {
+
+	})
+
+	datag := sdk.Group("/data")
+	datag.Register(&doc_api.ApiData{
+		Method: http.MethodGet,
+		Tags:   []string{"Data"},
+	}, func(ctx *gin.Context) {
+
+	})
+
+	usrg := datag.Group("/user")
+	usrg.Register(&doc_api.ApiData{
+		Method:       http.MethodPost,
+		RelativePath: "create",
+		Tags:         []string{"User"},
+		Response:     ResponseData{},
+	}, func(ctx *gin.Context) {})
+
+	sdk.RegisterGroup("/product", func(group *gin.RouterGroup, register doc_api.RegisterFunc) {
+		register(&doc_api.ApiData{
+			Payload:      PayloadDataDD{},
+			Method:       http.MethodPost,
+			RelativePath: "/create",
+			Tags:         []string{"Product"},
+		})
+	})
+
+	sdk.RegisterGroup("/product_data", func(group *gin.RouterGroup, register doc_api.RegisterFunc) {
+		register(&doc_api.ApiData{
+			Payload:      []*PayloadDataDD{},
+			Method:       http.MethodPost,
+			Response:     []string{},
+			RelativePath: "/create",
+			Tags:         []string{"Product"},
+		})
+	})
+
+	sdk.R.Run(":8200")
+}

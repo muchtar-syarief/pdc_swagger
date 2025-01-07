@@ -1,6 +1,7 @@
 package pdc_swagger_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/muchtar-syarief/pdc_swagger"
@@ -8,7 +9,7 @@ import (
 )
 
 type ApiError struct {
-	Message           string            `json:"message"`
+	Message           string            `json:"message,omitempty"`
 	ValidationMessage map[string]string `json:"validation_message"`
 }
 
@@ -18,8 +19,15 @@ type ApiResponse[T any] struct {
 }
 
 type User struct {
-	Email    string `json:"email" fmt:"email"`
-	Password string `json:"password" fmt:"password"`
+	Email    string `json:"email" fmt:"email" binding:"required,email"`
+	Password string `json:"password" fmt:"password" binding:"required,password"`
+	Username string `json:"username" binding:"required,gte=6,lte=32"`
+}
+
+type ListUser []*User
+
+type UserMapObject struct {
+	UserMapper map[string]*User `json:"user_mapper"`
 }
 
 func TestBuildSchema(t *testing.T) {
@@ -57,6 +65,26 @@ func TestBuildSchema(t *testing.T) {
 	t.Run("test fmt tag", func(t *testing.T) {
 		usr := &User{}
 		result := pdc_swagger.NewSchema(usr)
+		assert.NotEmpty(t, result)
+
+		raw, err := json.MarshalIndent(result, "", "	")
+		assert.Nil(t, err)
+		t.Log(string(raw))
+	})
+
+	t.Run("test map to struct", func(t *testing.T) {
+		usr := &UserMapObject{}
+		result := pdc_swagger.NewSchema(usr)
+		assert.NotEmpty(t, result)
+
+		// raw, err := json.MarshalIndent(result, "", "	")
+		// assert.Nil(t, err)
+		// t.Log(string(raw))
+	})
+
+	t.Run("test array", func(t *testing.T) {
+		data := &ListUser{}
+		result := pdc_swagger.NewSchema(data)
 		assert.NotEmpty(t, result)
 
 		// raw, err := json.MarshalIndent(result, "", "	")

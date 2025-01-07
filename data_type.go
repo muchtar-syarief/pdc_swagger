@@ -13,7 +13,7 @@ const (
 	DataTypeObject  DataType = "object"
 
 	DataTypeUnknown DataType = "unknown"
-	DataTypePointer DataType = "pointer"
+	// DataTypePointer DataType = "pointer"
 )
 
 func GetDataTypeMapper(dataType reflect.Kind) DataType {
@@ -28,6 +28,8 @@ func GetDataTypeMapper(dataType reflect.Kind) DataType {
 		return DataTypeArray
 	case reflect.Map, reflect.Struct, reflect.Interface, reflect.Pointer:
 		return DataTypeObject
+	case reflect.Bool:
+		return DataTypeBoolean
 	}
 
 	return DataTypeUnknown

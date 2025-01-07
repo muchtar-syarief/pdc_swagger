@@ -19,6 +19,10 @@ type PathItemObject struct {
 	Parameters  []*ParameterObject `yaml:"parameters,omitempty" json:"parameters,omitempty"`
 }
 
+func NewPathItemObjectDefault() *PathItemObject {
+	return &PathItemObject{}
+}
+
 func NewPathItemObject(summary, desc string) *PathItemObject {
 	return &PathItemObject{
 		Summary:     summary,

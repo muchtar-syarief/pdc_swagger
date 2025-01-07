@@ -3,19 +3,19 @@ package pdc_swagger
 type Component struct {
 	Schemas map[string]*Schema `yaml:"schemas" json:"schemas"`
 }
-type PdcSwaggerComponent struct {
+type PdcGoDocumentationComponent struct {
 	Components *Component `yaml:"components,omitempty" json:"components,omitempty"`
 }
 
-func NewComponent() *PdcSwaggerComponent {
-	return &PdcSwaggerComponent{
+func NewComponent() *PdcGoDocumentationComponent {
+	return &PdcGoDocumentationComponent{
 		Components: &Component{
 			Schemas: map[string]*Schema{},
 		},
 	}
 }
 
-func (c *PdcSwaggerComponent) AddComponent(name string, data interface{}) *PdcSwaggerComponent {
+func (c *PdcGoDocumentationComponent) AddComponent(name string, data interface{}) *PdcGoDocumentationComponent {
 	schema := NewSchema(data)
 	c.Components.Schemas[name] = schema
 

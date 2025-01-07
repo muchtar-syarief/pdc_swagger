@@ -3,6 +3,8 @@ package pdc_swagger
 import (
 	"reflect"
 	"time"
+
+	"github.com/muchtar-syarief/pdc_swagger/helper"
 )
 
 type Schema struct {
@@ -11,6 +13,19 @@ type Schema struct {
 	Items                *Schema            `yaml:"items,omitempty" json:"items,omitempty"`
 	Format               string             `yaml:"format,omitempty" json:"format,omitempty"`
 	AdditionalProperties *Schema            `yaml:"additionalProperties,omitempty" json:"additionalProperties,omitempty"`
+	Required             []string           `yaml:"required,omitempty" json:"required,omitempty"`
+
+	// // type int
+	// Minimum int `yaml:"minimum,omitempty" json:"minimum,omitempty"`
+	// Maximum int `yaml:"maximum,omitempty" json:"maximum,omitempty"`
+
+	// // type string
+	// MinLength int `yaml:"minLength,omitempty" json:"minLength,omitempty"`
+	// MaxLength int `yaml:"maxLength,omitempty" json:"maxLength,omitempty"`
+
+	// // type array
+	// MinItems int `yaml:"minItems,omitempty" json:"minItems,omitempty"`
+	// MaxItems int `yaml:"maxItems,omitempty" json:"maxItems,omitempty"`
 }
 
 func NewSchema(data interface{}) *Schema {
@@ -19,7 +34,12 @@ func NewSchema(data interface{}) *Schema {
 	dataType := reflect.TypeOf(data)
 	kind := dataType.Kind()
 
-	schema.Type = GetDataTypeMapper(kind)
+	schemaType := GetDataTypeMapper(kind)
+	if schemaType == DataTypeUnknown {
+		return schema
+	}
+
+	schema.Type = schemaType
 
 	switch kind {
 	case reflect.Struct:
@@ -44,26 +64,20 @@ func NewSchema(data interface{}) *Schema {
 			switch field.Type.Kind() {
 			case reflect.Pointer:
 				schemaProperties := NewSchema(dataModel)
-				schema.Properties = schemaProperties.Properties
+				for key, value := range schemaProperties.Properties {
+					schema.Properties[key] = value
+				}
 
 			default:
-				nameField := field.Tag.Get("json")
-				if nameField == "" {
-					nameField = field.Name
-				}
-
+				fieldName := helper.GetFieldName(field, "json")
 				schemaProperties := NewSchema(dataModel)
-				schema.Properties[nameField] = schemaProperties
 
-				formatField := field.Tag.Get("fmt")
-				if formatField != "" {
-					schema.Properties[nameField].Format = formatField
-				}
+				schema.Properties[fieldName] = schemaProperties
 			}
 		}
 
 	case reflect.Map:
-		valueType := reflect.TypeOf(data).Elem()
+		valueType := dataType.Elem()
 
 		dataModel := reflect.Zero(valueType).Interface()
 
@@ -76,6 +90,13 @@ func NewSchema(data interface{}) *Schema {
 
 		schema = result
 		return schema
+
+	case reflect.Array, reflect.Slice:
+		valueType := dataType.Elem()
+
+		dataModel := reflect.Zero(valueType).Interface()
+		properties := NewSchema(dataModel)
+		schema.Items = properties
 
 	case reflect.Invalid:
 		return schema

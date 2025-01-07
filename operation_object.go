@@ -37,6 +37,10 @@ func NewOperationObject(tags []string, summary, desc, operationID string) *Opera
 }
 
 func (o *OperationObject) SetParameters(data interface{}) *OperationObject {
+	if data == nil {
+		return o
+	}
+
 	if o.Parameters == nil {
 		o.Parameters = []*ParameterObject{}
 	}
@@ -48,6 +52,10 @@ func (o *OperationObject) SetParameters(data interface{}) *OperationObject {
 }
 
 func (o *OperationObject) SetRequestBody(data interface{}) *OperationObject {
+	if data == nil {
+		return o
+	}
+
 	if o.RequestBody == nil {
 		o.RequestBody = &RequestBodyObject{}
 	}
@@ -68,6 +76,10 @@ func (o *OperationObject) SetRequestBody(data interface{}) *OperationObject {
 }
 
 func (o *OperationObject) SetResponse(code string, data interface{}) *OperationObject {
+	if data == nil {
+		return o
+	}
+
 	if o.Responses == nil {
 		o.Responses = map[HTTPStatusCode]*ResponseObject{}
 	}
