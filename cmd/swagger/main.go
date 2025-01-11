@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/muchtar-syarief/pdc_swagger"
 	"github.com/muchtar-syarief/pdc_swagger/doc_api"
+	"github.com/muchtar-syarief/pdc_swagger/doc_api/gin_sdk"
 )
 
 type IntEnum int
@@ -29,9 +30,10 @@ func main() {
 	doc := pdc_swagger.NewPdcOpenApi("Test Documentation API", "Description test documentation api", "1.0.0")
 
 	r := gin.Default()
-	sdk := doc_api.NewApiSdk(r).
+	sdk := gin_sdk.NewGinApiSdk(r).
 		UseDocumentation(doc).
-		UseRedocDocumentation("/data_doc", "/redoc")
+		UseRedocDocumentation("/data_doc", "/redoc").
+		UseSwaggerDocumentation("/data_doc", "/docs")
 
 	sdk.Register(&doc_api.ApiData{
 		Payload:      PayloadDataDD{},
@@ -58,7 +60,7 @@ func main() {
 		Response:     ResponseData{},
 	}, func(ctx *gin.Context) {})
 
-	sdk.RegisterGroup("/product", func(group *gin.RouterGroup, register doc_api.RegisterFunc) {
+	sdk.RegisterGroup("/product", func(group *gin.RouterGroup, register gin_sdk.RegisterFunc) {
 		register(&doc_api.ApiData{
 			Payload:      PayloadDataDD{},
 			Method:       http.MethodPost,
@@ -67,7 +69,7 @@ func main() {
 		})
 	})
 
-	sdk.RegisterGroup("/product_data", func(group *gin.RouterGroup, register doc_api.RegisterFunc) {
+	sdk.RegisterGroup("/product_data", func(group *gin.RouterGroup, register gin_sdk.RegisterFunc) {
 		register(&doc_api.ApiData{
 			Payload:      []*PayloadDataDD{},
 			Method:       http.MethodPost,
