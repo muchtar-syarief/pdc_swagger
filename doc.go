@@ -1,10 +1,14 @@
 package pdc_swagger
 
 import (
+	"encoding/json"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/muchtar-syarief/pdc_swagger/view"
+	"gopkg.in/yaml.v3"
 )
 
 type PdcOpenApi struct {
@@ -120,4 +124,40 @@ func (d *PdcOpenApi) RegisterRedocDocumentation(urlData, urlDoc string, handler 
 	}
 
 	handler(http.MethodGet, urlDoc, getTemplate)
+}
+
+func (d *PdcOpenApi) Save(filename string) error {
+	var err error
+
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0655)
+	if err != nil {
+		return err
+	}
+
+	var data []byte
+
+	ext := filepath.Ext(filename)
+	switch ext {
+	case "yaml", "yml":
+		raw, err := yaml.Marshal(d)
+		if err != nil {
+			return err
+		}
+
+		data = raw
+
+	default:
+		raw, err := json.MarshalIndent(d, "", "	")
+		if err != nil {
+			return err
+		}
+
+		data = raw
+	}
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return err
 }

@@ -7,29 +7,19 @@ import (
 	"github.com/muchtar-syarief/pdc_swagger"
 )
 
-type SdkGroup struct {
+type GinSdkGroup struct {
 	sdk      *GinApiSdk
 	G        *gin.RouterGroup
 	Basepath string
 }
 
-func (grp *SdkGroup) GetGinEngine() *gin.Engine {
+func (grp *GinSdkGroup) GetGinEngine() *gin.Engine {
 	return grp.sdk.R
 }
 
-func (grp *SdkGroup) Register(api pdc_swagger.Api, handlers ...gin.HandlerFunc) gin.IRoutes {
-	api.SetGroupPath(grp.Basepath)
-
-	if grp.sdk.doc != nil {
-		grp.sdk.doc.AddToDocumentation(api)
-	}
-
-	return grp.G.Handle(api.GetMethod(), api.GetRelativePath(), handlers...)
-}
-
-func (grp *SdkGroup) Group(path string) *SdkGroup {
+func (grp *GinSdkGroup) Group(path string) *GinSdkGroup {
 	base, _ := url.JoinPath(grp.Basepath, path)
-	newGroup := SdkGroup{
+	newGroup := GinSdkGroup{
 		sdk:      grp.sdk,
 		G:        grp.G.Group(path),
 		Basepath: base,
@@ -38,30 +28,12 @@ func (grp *SdkGroup) Group(path string) *SdkGroup {
 	return &newGroup
 }
 
-func (sdk *GinApiSdk) Group(relativePath string) *SdkGroup {
-	newGroup := SdkGroup{
-		sdk:      sdk,
-		G:        sdk.R.Group(relativePath),
-		Basepath: relativePath,
+func (grp *GinSdkGroup) Register(api pdc_swagger.Api, handlers ...gin.HandlerFunc) gin.IRoutes {
+	api.SetGroupPath(grp.Basepath)
+
+	if grp.sdk.doc != nil {
+		grp.sdk.doc.AddToDocumentation(api)
 	}
 
-	return &newGroup
-}
-
-type RegisterFunc func(api pdc_swagger.Api, handlers ...gin.HandlerFunc) gin.IRoutes
-
-func (sdk *GinApiSdk) RegisterGroup(relativePath string, groupHandler func(group *gin.RouterGroup, register RegisterFunc)) {
-	r := sdk.R.Group(relativePath)
-
-	var registfn RegisterFunc = func(api pdc_swagger.Api, handlers ...gin.HandlerFunc) gin.IRoutes {
-		api.SetGroupPath(relativePath)
-
-		if sdk.doc != nil {
-			sdk.doc.AddToDocumentation(api)
-		}
-
-		return r.Handle(api.GetMethod(), api.GetRelativePath(), handlers...)
-	}
-
-	groupHandler(r, registfn)
+	return grp.G.Handle(api.GetMethod(), api.GetRelativePath(), handlers...)
 }

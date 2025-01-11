@@ -1,12 +1,10 @@
 package main
 
 import (
-	"net/http"
+	"log"
+	"os"
 
-	"github.com/gin-gonic/gin"
-	"github.com/muchtar-syarief/pdc_swagger"
-	"github.com/muchtar-syarief/pdc_swagger/doc_api"
-	"github.com/muchtar-syarief/pdc_swagger/doc_api/gin_sdk"
+	"github.com/urfave/cli/v2"
 )
 
 type IntEnum int
@@ -27,57 +25,20 @@ type ResponseData struct {
 
 func main() {
 
-	doc := pdc_swagger.NewPdcOpenApi("Test Documentation API", "Description test documentation api", "1.0.0")
+	app := &cli.App{
+		Name:  "Server Api",
+		Usage: "Server Api",
+		Commands: []*cli.Command{
+			GinApiCli(),
+			EchoApiCli(),
+		},
+		Action: func(*cli.Context) error {
+			log.Println("Duar----->>>")
+			return nil
+		},
+	}
 
-	r := gin.Default()
-	sdk := gin_sdk.NewGinApiSdk(r).
-		UseDocumentation(doc).
-		UseRedocDocumentation("/data_doc", "/redoc").
-		UseSwaggerDocumentation("/data_doc", "/docs")
-
-	sdk.Register(&doc_api.ApiData{
-		Payload:      PayloadDataDD{},
-		Method:       http.MethodPost,
-		RelativePath: "/users",
-		Tags:         []string{"Users"},
-	}, func(ctx *gin.Context) {
-
-	})
-
-	datag := sdk.Group("/data")
-	datag.Register(&doc_api.ApiData{
-		Method: http.MethodGet,
-		Tags:   []string{"Data"},
-	}, func(ctx *gin.Context) {
-
-	})
-
-	usrg := datag.Group("/user")
-	usrg.Register(&doc_api.ApiData{
-		Method:       http.MethodPost,
-		RelativePath: "create",
-		Tags:         []string{"User"},
-		Response:     ResponseData{},
-	}, func(ctx *gin.Context) {})
-
-	sdk.RegisterGroup("/product", func(group *gin.RouterGroup, register gin_sdk.RegisterFunc) {
-		register(&doc_api.ApiData{
-			Payload:      PayloadDataDD{},
-			Method:       http.MethodPost,
-			RelativePath: "/create",
-			Tags:         []string{"Product"},
-		})
-	})
-
-	sdk.RegisterGroup("/product_data", func(group *gin.RouterGroup, register gin_sdk.RegisterFunc) {
-		register(&doc_api.ApiData{
-			Payload:      []*PayloadDataDD{},
-			Method:       http.MethodPost,
-			Response:     []string{},
-			RelativePath: "/create",
-			Tags:         []string{"Product"},
-		})
-	})
-
-	sdk.R.Run(":8200")
+	if err := app.Run(os.Args); err != nil {
+		log.Panicln(err)
+	}
 }

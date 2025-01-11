@@ -1,7 +1,6 @@
 package pdc_swagger_test
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/muchtar-syarief/pdc_swagger"
@@ -67,9 +66,9 @@ func TestBuildSchema(t *testing.T) {
 		result := pdc_swagger.NewSchema(usr)
 		assert.NotEmpty(t, result)
 
-		raw, err := json.MarshalIndent(result, "", "	")
-		assert.Nil(t, err)
-		t.Log(string(raw))
+		// raw, err := json.MarshalIndent(result, "", "	")
+		// assert.Nil(t, err)
+		// t.Log(string(raw))
 	})
 
 	t.Run("test map to struct", func(t *testing.T) {
