@@ -4,20 +4,56 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/muchtar-syarief/pdc_swagger"
 	"github.com/muchtar-syarief/pdc_swagger/doc_api"
 	"github.com/muchtar-syarief/pdc_swagger/doc_api/echo_sdk"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v3"
 )
 
 func echoApi() {
-	doc := pdc_swagger.NewPdcOpenApi("Test Documentation API Using Echo", "Description test documentation api using Echo", "1.0.0")
-
 	e := echo.New()
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "${time_rfc3339}	${method}	${status}		 ${uri}\n",
+	}))
+
+	doc := pdc_swagger.NewPdcOpenApi("Test Documentation API Using Echo", "Description test documentation api using Echo", "1.0.0")
+	doc.RegisterDataDocumentation("/doc_data", func(method, path string) {
+		e.Add(method, path, func(ctx echo.Context) error {
+			raw, err := yaml.Marshal(doc)
+			if err != nil {
+				return ctx.JSON(500, echo.Map{"status": "error"})
+			}
+
+			return ctx.Blob(http.StatusOK, "application/x-yaml", raw)
+		})
+	})
+
+	doc.RegisterSwaggerDocumentation("/doc_data", "/docs", func(method, path string, responseTemplate func() (string, error)) {
+		e.Add(method, path, func(ctx echo.Context) error {
+			template, err := responseTemplate()
+			if err != nil {
+				return ctx.JSON(500, echo.Map{"status": "error"})
+			}
+
+			return ctx.HTML(200, template)
+		})
+	})
+
+	doc.RegisterRedocDocumentation("/doc_data", "/redoc", func(method, path string, responseTemplate func() (string, error)) {
+		e.Add(method, path, func(ctx echo.Context) error {
+			template, err := responseTemplate()
+			if err != nil {
+				return ctx.JSON(500, echo.Map{"status": "error"})
+			}
+
+			return ctx.HTML(200, template)
+		})
+	})
+
 	sdk := echo_sdk.NewEchoApiSdk(e).
-		UseDocumentation(doc).
-		UseRedocDocumentation("/data_doc", "/redoc").
-		UseSwaggerDocumentation("/data_doc", "/docs")
+		Use(doc.AddToDocumentation)
 
 	sdk.Register(&doc_api.ApiData{
 		Payload:      PayloadDataDD{},

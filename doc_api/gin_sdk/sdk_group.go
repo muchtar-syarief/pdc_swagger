@@ -31,8 +31,8 @@ func (grp *GinSdkGroup) Group(path string) *GinSdkGroup {
 func (grp *GinSdkGroup) Register(api pdc_swagger.Api, handlers ...gin.HandlerFunc) gin.IRoutes {
 	api.SetGroupPath(grp.Basepath)
 
-	if grp.sdk.doc != nil {
-		grp.sdk.doc.AddToDocumentation(api)
+	for _, middlewareFunc := range grp.sdk.middlewares {
+		middlewareFunc(api)
 	}
 
 	return grp.G.Handle(api.GetMethod(), api.GetRelativePath(), handlers...)

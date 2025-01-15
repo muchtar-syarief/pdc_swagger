@@ -1,20 +1,14 @@
 package echo_sdk
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo/v4"
 	"github.com/muchtar-syarief/pdc_swagger"
-	"github.com/muchtar-syarief/pdc_swagger/doc_api"
-	"gopkg.in/yaml.v3"
 )
 
 type EchoApiSdk struct {
-	E   *echo.Echo
-	doc doc_api.Documentation
+	E *echo.Echo
 
-	isApiDocRegistered bool
+	middlewares []func(pdc_swagger.Api)
 }
 
 func NewEchoApiSdk(e *echo.Echo) *EchoApiSdk {
@@ -45,8 +39,8 @@ func (sdk *EchoApiSdk) RegisterGroup(relativePath string, groupHandler func(grou
 	var registfn RegisterFunc = func(api pdc_swagger.Api, handler echo.HandlerFunc, middlewares ...echo.MiddlewareFunc) *echo.Route {
 		api.SetGroupPath(relativePath)
 
-		if sdk.doc != nil {
-			sdk.doc.AddToDocumentation(api)
+		for _, middlewareFunc := range sdk.middlewares {
+			middlewareFunc(api)
 		}
 
 		return e.Add(api.GetMethod(), api.GetRelativePath(), handler, middlewares...)
@@ -55,83 +49,15 @@ func (sdk *EchoApiSdk) RegisterGroup(relativePath string, groupHandler func(grou
 	groupHandler(e, registfn)
 }
 
-func (sdk *EchoApiSdk) UseDocumentation(doc doc_api.Documentation) *EchoApiSdk {
-	sdk.doc = doc
-	return sdk
-}
-
-func (sdk *EchoApiSdk) UseSwaggerDocumentation(dataUri, docUri string) *EchoApiSdk {
-	if sdk.doc == nil {
-		return sdk
-	}
-
-	if !sdk.isApiDocRegistered {
-		sdk.doc.RegisterDataDocumentation(dataUri, func(method, path string) {
-			sdk.E.Add(method, path, func(ctx echo.Context) error {
-				raw, err := yaml.Marshal(sdk.doc)
-				if err != nil {
-					return ctx.JSON(500, gin.H{"status": "error"})
-				}
-
-				return ctx.Blob(http.StatusOK, "application/x-yaml", raw)
-			})
-		})
-	}
-
-	sdk.doc.RegisterSwaggerDocumentation(dataUri, docUri, func(method, path string, responseTemplate func() (string, error)) {
-		sdk.E.Add(method, path, func(ctx echo.Context) error {
-			template, err := responseTemplate()
-			if err != nil {
-				return ctx.JSON(500, gin.H{"status": "error"})
-			}
-
-			return ctx.HTML(200, template)
-		})
-	})
-
-	sdk.isApiDocRegistered = true
-
-	return sdk
-}
-
-func (sdk *EchoApiSdk) UseRedocDocumentation(dataUri, docUri string) *EchoApiSdk {
-	if sdk.doc == nil {
-		return sdk
-	}
-
-	if !sdk.isApiDocRegistered {
-		sdk.doc.RegisterDataDocumentation(dataUri, func(method, path string) {
-			sdk.E.Add(method, path, func(ctx echo.Context) error {
-				raw, err := yaml.Marshal(sdk.doc)
-				if err != nil {
-					return ctx.JSON(500, gin.H{"status": "error"})
-				}
-
-				return ctx.Blob(http.StatusOK, "application/x-yaml", raw)
-			})
-		})
-	}
-
-	sdk.doc.RegisterRedocDocumentation(dataUri, docUri, func(method, path string, responseTemplate func() (string, error)) {
-		sdk.E.Add(method, path, func(ctx echo.Context) error {
-			template, err := responseTemplate()
-			if err != nil {
-				return ctx.JSON(500, gin.H{"status": "error"})
-			}
-
-			return ctx.HTML(200, template)
-		})
-	})
-
-	sdk.isApiDocRegistered = true
-
+func (sdk *EchoApiSdk) Use(handler func(pdc_swagger.Api)) *EchoApiSdk {
+	sdk.middlewares = append(sdk.middlewares, handler)
 	return sdk
 }
 
 func (sdk *EchoApiSdk) Register(api pdc_swagger.Api, handler echo.HandlerFunc, middlewares ...echo.MiddlewareFunc) *echo.Route {
 
-	if sdk.doc != nil {
-		sdk.doc.AddToDocumentation(api)
+	for _, middlewareFunc := range sdk.middlewares {
+		middlewareFunc(api)
 	}
 
 	return sdk.E.Add(api.GetMethod(), api.GetRelativePath(), handler, middlewares...)

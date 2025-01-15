@@ -6,13 +6,45 @@ The documentation can be access with swagger mode or redoc mode.
 ## Swagger And Redoc Documentation
 Example Usage :
 ```	
-doc := pdc_swagger.NewPdcOpenApi("Test Documentation API", "Description test documentation api", "1.0.0")
+	r := gin.Default()
+	doc := pdc_swagger.NewPdcOpenApi(
+		"Test Documentation API Using Gin", 
+		"Description test documentation api using gin", 
+		"1.0.0",
+		)
+		
+	r.Handle(http.MethodGet, "/doc_data", func(ctx *gin.Context) {
+		doc.RegisterDataDocumentation("/doc_data", func(method, path string) {
+			ctx.YAML(200, doc)
+		})
+	})
 
-r := gin.Default()
-sdk := doc_api.NewApiSdk(r).
-		UseDocumentation(doc).
-		UseRedocDocumentation("/data_doc", "/redoc").
-		UseSwaggerDocumentation("/data_doc", "/docs")
+	doc.RegisterSwaggerDocumentation("/doc_data", "/docs", func(method, path string, responseTemplate func() (string, error)) {
+		r.Handle(method, path, func(ctx *gin.Context) {
+			template, err := responseTemplate()
+			if err != nil {
+				ctx.JSON(500, gin.H{"status": "error"})
+				return
+			}
+
+			ctx.Data(200, "text/html", []byte(template))
+		})
+	})
+
+	doc.RegisterRedocDocumentation("/doc_data", "/redoc", func(method, path string, responseTemplate func() (string, error)) {
+		r.Handle(method, path, func(ctx *gin.Context) {
+			template, err := responseTemplate()
+			if err != nil {
+				ctx.JSON(500, gin.H{"status": "error"})
+				return
+			}
+
+			ctx.Data(200, "text/html", []byte(template))
+		})
+	})
+
+	sdk := gin_sdk.NewGinApiSdk(r).
+		Use(doc.AddToDocumentation)
 
 sdk.Register(&doc_api.ApiData{
 	Method:       http.MethodPost,

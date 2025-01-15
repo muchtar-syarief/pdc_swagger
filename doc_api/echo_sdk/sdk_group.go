@@ -20,8 +20,8 @@ func (grp *SdkGroup) GetGinEngine() *echo.Echo {
 func (grp *SdkGroup) Register(api pdc_swagger.Api, handler echo.HandlerFunc, middlewares ...echo.MiddlewareFunc) *echo.Route {
 	api.SetGroupPath(grp.Basepath)
 
-	if grp.sdk.doc != nil {
-		grp.sdk.doc.AddToDocumentation(api)
+	for _, middlewareFunc := range grp.sdk.middlewares {
+		middlewareFunc(api)
 	}
 
 	return grp.G.Add(api.GetMethod(), api.GetRelativePath(), handler, middlewares...)
